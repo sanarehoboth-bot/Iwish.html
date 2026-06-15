@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-WISH v2 · Occasion Ecard Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --ink:#0A0F1E;
+  --gold:#C9A84C;
+  --gold2:#E8C87A;
+  --cream:#F7F3EC;
+  --mist:rgba(247,243,236,0.55);
+  --border:rgba(201,168,76,0.22);
+  --deep:#0D1F35;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Cormorant Garamond",serif;min-height:100vh;background:var(--ink);}
+
+/* ══════════════════════════════
+   PAY SCREEN
+══════════════════════════════ */
+#payScreen{
+  min-height:100vh;
+  background:var(--ink);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  padding:0 20px 80px;
+  position:relative;overflow:hidden;
+}
+
+/* Ambient glow layers */
+#payScreen::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(32,178,170,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 90% 80%, rgba(108,99,255,0.08) 0%, transparent 50%);
+}
+
+/* Subtle grain */
+#payScreen::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-size:200px 200px;opacity:0.4;
+}
+
+.pay-hero{
+  text-align:center;padding:52px 0 28px;
+  position:relative;z-index:2;
+}
+.pay-eyebrow{
+  font-family:"DM Sans",sans-serif;font-size:10px;
+  letter-spacing:5px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:14px;opacity:0.8;
+}
+.pay-logo{
+  font-family:"Playfair Display",serif;
+  font-size:clamp(52px,14vw,82px);
+  font-style:italic;font-weight:700;
+  color:var(--cream);line-height:0.95;
+  margin-bottom:10px;
+  text-shadow:0 0 60px rgba(201,168,76,0.25),0 2px 20px rgba(0,0,0,0.5);
+}
+.pay-logo em{
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.pay-tagline{
+  font-family:"DM Sans",sans-serif;font-size:11px;
+  letter-spacing:4px;text-transform:uppercase;
+  color:rgba(247,243,236,0.35);margin-top:6px;
+}
+
+/* Gold divider */
+.orn{
+  display:flex;align-items:center;gap:14px;
+  margin:18px auto;width:100%;max-width:340px;
+  color:var(--gold);font-size:13px;
+  position:relative;z-index:2;opacity:0.6;
+}
+.orn::before,.orn::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.5),transparent);
+}
+
+/* Pay card */
+.pay-card{
+  background:rgba(247,243,236,0.04);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(201,168,76,0.18);
+  border-radius:28px;
+  padding:28px 22px 32px;
+  width:100%;max-width:390px;
+  box-shadow:0 20px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(201,168,76,0.05) inset;
+  position:relative;z-index:2;
+}
+.card-tagline{
+  font-family:"Playfair Display",serif;
+  font-style:italic;font-size:14px;
+  color:rgba(247,243,236,0.4);
+  text-align:center;margin-bottom:20px;
+  line-height:1.7;padding:0 8px;
+}
+.price-big{
+  font-family:"Playfair Display",serif;
+  font-size:clamp(72px,18vw,96px);
+  font-weight:700;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;text-align:center;
+}
+.price-usd{
+  font-family:"DM Sans",sans-serif;font-size:13px;
+  color:rgba(247,243,236,0.35);text-align:center;
+  margin-top:-4px;margin-bottom:6px;letter-spacing:0.3px;
+}
+.price-sub{
+  font-size:11px;color:rgba(247,243,236,0.3);
+  margin-bottom:18px;letter-spacing:.3px;
+  text-align:center;font-family:"DM Sans",sans-serif;
+}
+.pay-btn{
+  display:block;width:100%;
+  background:linear-gradient(135deg,var(--gold) 0%,#B8922A 60%,var(--gold) 100%);
+  color:var(--ink);
+  font-family:"Playfair Display",serif;
+  font-weight:700;font-size:19px;font-style:italic;
+  padding:17px;border-radius:14px;border:none;
+  cursor:pointer;letter-spacing:.5px;
+  margin-bottom:6px;
+  transition:opacity .2s,transform .15s;
+  box-shadow:0 6px 28px rgba(201,168,76,0.35);
+}
+.pay-btn:hover{opacity:.92;transform:translateY(-1px);}
+.pay-btn-sub{
+  font-size:11px;color:rgba(247,243,236,0.28);
+  text-align:center;margin-bottom:18px;
+  letter-spacing:.3px;font-family:"DM Sans",sans-serif;
+}
+.pay-note{
+  background:rgba(201,168,76,0.06);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:12px;padding:13px 15px;
+  margin-bottom:16px;text-align:center;
+}
+.pay-note p{
+  font-size:12px;color:rgba(247,243,236,0.5);
+  line-height:1.65;font-family:"DM Sans",sans-serif;
+}
+.pay-note strong{color:var(--gold);}
+.pay-pills{
+  display:flex;gap:5px;justify-content:center;
+  flex-wrap:wrap;margin-top:9px;
+}
+.pay-pill{
+  background:rgba(201,168,76,0.12);
+  border:1px solid rgba(201,168,76,0.2);
+  color:rgba(247,243,236,0.55);
+  font-size:10px;font-weight:600;
+  padding:3px 11px;border-radius:20px;
+  font-family:"DM Sans",sans-serif;
+}
+.pay-div{
+  display:flex;align-items:center;gap:10px;
+  color:rgba(247,243,236,0.2);font-size:10px;
+  letter-spacing:2.5px;text-transform:uppercase;
+  margin-bottom:14px;font-family:"DM Sans",sans-serif;
+}
+.pay-div::before,.pay-div::after{content:"";flex:1;height:1px;background:rgba(201,168,76,0.15);}
+.pin-lbl{
+  text-align:center;font-size:10px;letter-spacing:3px;
+  text-transform:uppercase;color:rgba(247,243,236,0.3);
+  margin-bottom:13px;font-family:"DM Sans",sans-serif;
+}
+.pin-dots{display:flex;justify-content:center;gap:16px;margin-bottom:20px;}
+.pin-dot{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(201,168,76,0.3);
+  background:transparent;transition:all .2s;
+}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);}
+.pin-dot.error{background:#C45A3C;border-color:#C45A3C;animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto;}
+.key{
+  background:rgba(247,243,236,0.04);
+  border:1.5px solid rgba(201,168,76,0.15);
+  color:var(--cream);
+  font-family:"Playfair Display",serif;
+  font-size:26px;font-weight:400;
+  padding:15px 0;border-radius:50%;
+  cursor:pointer;transition:all .15s;text-align:center;
+}
+.key:hover{background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.35);}
+.key:active{transform:scale(.9);}
+.key.del{font-family:"DM Sans",sans-serif;font-size:16px;color:rgba(247,243,236,0.35);}
+.key.empty{cursor:default;background:none;border:none;pointer-events:none;}
+.pin-err{text-align:center;font-size:12px;color:#E07060;display:none;margin-top:8px;font-family:"DM Sans",sans-serif;}
+.pay-quote{
+  font-family:"Playfair Display",serif;font-style:italic;
+  font-size:14px;color:rgba(247,243,236,0.2);
+  text-align:center;margin-top:24px;
+  max-width:300px;line-height:1.8;
+  position:relative;z-index:2;
+}
+.pay-copy{
+  font-size:10px;color:rgba(247,243,236,0.12);
+  margin-top:14px;text-align:center;
+  letter-spacing:.5px;position:relative;z-index:2;
+  font-family:"DM Sans",sans-serif;
+}
+
+/* ══════════════════════════════
+   TOOL SCREEN
+══════════════════════════════ */
+#toolScreen{
+  display:none;
+  min-height:100vh;
+  background:var(--ink);
+  color:var(--cream);
+}
+#toolScreen.show{display:block;}
+
+.tool-header{
+  text-align:center;
+  padding:36px 20px 24px;
+  position:relative;
+}
+.tool-header::after{
+  content:"";display:block;
+  width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:14px auto 0;
+}
+.tool-header h1{
+  font-family:"Playfair Display",serif;
+  font-size:32px;font-style:italic;
+  background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:2px;
+}
+.tool-header p{
+  font-size:11px;color:rgba(247,243,236,0.3);
+  letter-spacing:4px;margin-top:6px;
+  text-transform:uppercase;font-family:"DM Sans",sans-serif;
+}
+
+.form-card{
+  background:rgba(247,243,236,0.03);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:22px;padding:26px 22px;
+  width:100%;max-width:440px;
+  margin:0 auto 20px;
+}
+.form-row{margin-bottom:16px;}
+label{
+  display:block;font-size:10px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:7px;font-family:"DM Sans",sans-serif;
+  opacity:0.8;
+}
+input,select,textarea{
+  width:100%;padding:13px 15px;
+  background:rgba(247,243,236,0.05);
+  border:1px solid rgba(247,243,236,0.1);
+  border-radius:11px;color:var(--cream);
+  font-family:"Cormorant Garamond",serif;
+  font-size:16px;outline:none;transition:border .2s;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,0.5);}
+select option{background:var(--ink);}
+textarea{resize:none;height:82px;}
+
+/* Occasion grid - visual selector */
+.occ-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-top:4px;
+}
+.occ-btn{
+  background:rgba(247,243,236,0.04);
+  border:1.5px solid rgba(247,243,236,0.08);
+  border-radius:12px;padding:10px 6px;
+  text-align:center;cursor:pointer;
+  transition:all .2s;font-family:"DM Sans",sans-serif;
+}
+.occ-btn:hover{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);}
+.occ-btn.selected{
+  background:rgba(201,168,76,0.15);
+  border-color:var(--gold);
+  box-shadow:0 0 14px rgba(201,168,76,0.15);
+}
+.occ-icon{font-size:20px;display:block;margin-bottom:4px;}
+.occ-label{font-size:9px;color:rgba(247,243,236,0.55);letter-spacing:1px;text-transform:uppercase;}
+.occ-btn.selected .occ-label{color:var(--gold);}
+
+.btn-generate{
+  width:100%;padding:17px;
+  background:linear-gradient(135deg,var(--gold) 0%,#B8922A 60%,var(--gold) 100%);
+  color:var(--ink);border:none;border-radius:14px;
+  font-family:"Playfair Display",serif;
+  font-size:17px;font-weight:700;font-style:italic;
+  cursor:pointer;letter-spacing:1px;
+  transition:opacity .2s;margin-top:4px;
+  box-shadow:0 6px 24px rgba(201,168,76,0.3);
+}
+.btn-generate:active{opacity:.8;}
+
+/* ══ CARD CANVAS ══ */
+#card-wrap{
+  width:100%;max-width:440px;
+  margin:0 auto;display:none;padding:0 16px;
+}
+#ecard{
+  width:100%;aspect-ratio:1/1;
+  background-size:cover;background-position:center;
+  background-color:var(--deep);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:40px 36px;
+  border-radius:22px;
+}
+/* Rich overlay — deeper luxury gradient */
+#ecard::before{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,
+      rgba(8,12,30,0.25) 0%,
+      rgba(8,12,30,0.05) 25%,
+      rgba(8,12,30,0.15) 55%,
+      rgba(8,12,30,0.72) 80%,
+      rgba(8,12,30,0.88) 100%);
+  z-index:0;
+}
+/* Gold vignette edge */
+#ecard::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 100% 100% at 50% 50%,transparent 55%,rgba(0,0,0,0.35) 100%);
+  z-index:0;
+}
+.c-badge{
+  font-family:"DM Sans",sans-serif;font-size:9px;
+  letter-spacing:5px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:8px;
+  position:relative;z-index:1;opacity:0.85;
+}
+.c-occ{
+  font-family:"DM Sans",sans-serif;font-size:11px;
+  letter-spacing:3.5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.6);margin-bottom:10px;
+  position:relative;z-index:1;
+}
+.c-name{
+  font-family:"Playfair Display",serif;
+  font-size:clamp(24px,6vw,34px);
+  font-style:italic;color:#fff;
+  margin-bottom:14px;position:relative;z-index:1;
+  text-shadow:0 2px 20px rgba(0,0,0,0.6);
+  line-height:1.15;
+}
+/* Gold divider line on card */
+.c-div{
+  width:48px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:0 auto 14px;position:relative;z-index:1;
+}
+.c-msg{
+  font-family:"Cormorant Garamond",serif;
+  font-size:clamp(13px,3.2vw,16px);
+  color:rgba(255,255,255,0.88);
+  line-height:1.65;margin-bottom:14px;
+  position:relative;z-index:1;
+  text-shadow:0 1px 10px rgba(0,0,0,0.6);
+  font-style:italic;
+}
+.c-verse{
+  font-family:"DM Sans",sans-serif;
+  font-size:9px;letter-spacing:1.5px;
+  color:rgba(201,168,76,0.75);
+  position:relative;z-index:1;
+  text-transform:uppercase;margin-bottom:10px;
+}
+.c-from{
+  font-family:"DM Sans",sans-serif;font-size:10px;
+  letter-spacing:2px;color:rgba(255,255,255,0.4);
+  text-transform:uppercase;position:relative;z-index:1;
+}
+.c-wm{
+  position:absolute;bottom:13px;right:15px;
+  font-size:8px;letter-spacing:2px;
+  color:rgba(255,255,255,0.15);
+  font-family:"DM Sans",sans-serif;z-index:1;
+}
+
+.card-btns{
+  display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;
+}
+.card-btn{
+  flex:1;padding:13px;border-radius:12px;
+  font-family:"DM Sans",sans-serif;font-weight:600;
+  font-size:13px;cursor:pointer;transition:opacity .2s;
+  border:none;min-width:90px;
+}
+.card-btn.dl{
+  background:rgba(247,243,236,0.07);
+  border:1px solid rgba(201,168,76,0.3);color:var(--gold);
+}
+.card-btn.wa{background:#25D366;color:#fff;}
+.card-btn.nx{
+  background:linear-gradient(135deg,var(--gold),#B8922A);color:var(--ink);
+}
+.card-btn.back{
+  background:none;border:1px solid rgba(247,243,236,0.1);
+  color:rgba(247,243,236,0.3);
+}
+#status{
+  font-size:12px;text-align:center;margin-top:10px;
+  color:var(--gold);min-height:18px;
+  font-family:"DM Sans",sans-serif;
+}
+.footer{
+  text-align:center;font-size:11px;
+  color:rgba(247,243,236,0.15);
+  padding:28px 16px;font-family:"DM Sans",sans-serif;
+  letter-spacing:.5px;
+}
+
+/* ══ AI COACH ══ */
+#coachOverlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(8,10,20,0.92);backdrop-filter:blur(8px);
+  align-items:flex-end;justify-content:center;padding:0;
+}
+#coachOverlay.open{display:flex;}
+.coach-panel{
+  background:#12101e;
+  border:1px solid rgba(108,99,255,0.25);
+  border-radius:22px 22px 0 0;
+  max-width:480px;width:100%;max-height:68vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 -12px 50px rgba(108,99,255,0.15);
+}
+.coach-head{
+  padding:17px 20px 13px;
+  border-bottom:1px solid rgba(108,99,255,0.15);
+  display:flex;align-items:center;gap:12px;
+}
+.coach-av{
+  width:38px;height:38px;min-width:38px;border-radius:50%;
+  background:linear-gradient(135deg,#6C63FF,#A78BFA);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.coach-name{font-weight:700;font-size:15px;color:#f0ead8;}
+.coach-status{font-size:11px;color:#4ade80;}
+.coach-close{margin-left:auto;background:none;border:none;color:#5a5248;font-size:20px;cursor:pointer;line-height:1;}
+.coach-msgs{
+  flex:1;overflow-y:auto;padding:14px 18px;
+  display:flex;flex-direction:column;gap:10px;scrollbar-width:none;
+}
+.coach-msgs::-webkit-scrollbar{display:none;}
+.cmsg{max-width:86%;}
+.cmsg.bot{align-self:flex-start;}
+.cmsg.usr{align-self:flex-end;}
+.cmsg.bot .cbubble{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(108,99,255,0.18);
+  border-radius:4px 14px 14px 14px;
+  padding:10px 14px;font-size:13px;line-height:1.65;color:#e8e0d0;
+}
+.cmsg.usr .cbubble{
+  background:rgba(108,99,255,0.18);
+  border-radius:14px 14px 4px 14px;
+  padding:10px 14px;font-size:13px;color:#f0ead8;
+}
+.coach-chips{
+  display:flex;gap:7px;flex-wrap:wrap;
+  padding:8px 18px;
+  border-top:1px solid rgba(108,99,255,0.12);
+}
+.cchip{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(108,99,255,0.22);
+  color:var(--gold);font-size:12px;
+  padding:6px 13px;border-radius:20px;
+  cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.cchip:hover{background:rgba(108,99,255,0.14);}
+.coach-input-row{
+  display:flex;gap:8px;padding:10px 18px 16px;
+  border-top:1px solid rgba(108,99,255,0.12);
+}
+.coach-input{
+  flex:1;background:rgba(255,255,255,0.05);
+  border:1px solid rgba(108,99,255,0.22);
+  color:#f0ead8;padding:10px 13px;border-radius:10px;
+  font-family:inherit;font-size:14px;outline:none;
+}
+.coach-input::placeholder{color:#5a5248;}
+.coach-input:focus{border-color:rgba(108,99,255,0.45);}
+.coach-send{
+  background:linear-gradient(135deg,#6C63FF,#4F46E5);
+  color:#fff;border:none;border-radius:10px;
+  width:42px;height:42px;font-size:17px;cursor:pointer;
+}
+#coachFloatBtn{
+  position:fixed;bottom:22px;right:22px;z-index:400;
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,#6C63FF,#A78BFA);
+  color:#fff;border:none;font-size:24px;cursor:pointer;
+  box-shadow:0 4px 22px rgba(108,99,255,0.45);
+  display:none;animation:popIn .3s ease;
+}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ PAY SCREEN ══════════════ -->
+<div id="payScreen">
+  <div class="pay-hero">
+    <div class="pay-eyebrow">✉ Occasion Cards · Elevated</div>
+    <div class="pay-logo"><em>A-WISH</em></div>
+    <div class="pay-tagline">Personal · Corporate · Blessed · Beautiful</div>
+  </div>
+  <div class="orn">💌</div>
+
+  <div class="pay-card">
+    <div class="card-tagline">"Not just a message — a moment they will remember forever."</div>
+    <div class="price-big">₹999</div>
+    <div class="price-usd">≈ $12 · One-time lifetime access</div>
+    <div class="price-sub">No subscription · No repeat payment · Yours forever</div>
+    <button class="pay-btn" onclick="handlePay()">✦ Get Access · ₹999</button>
+    <div class="pay-btn-sub">Gumroad checkout · UPI · Cards · Safe &amp; instant</div>
+    <div class="pay-note">
+      <p>🇮🇳 <strong>India</strong> — ₹999 via UPI / Card &nbsp;|&nbsp; 🌍 <strong>Global</strong> — ~$12 at checkout.<br>PIN arrives by email within minutes.</p>
+      <div class="pay-pills">
+        <span class="pay-pill">UPI</span><span class="pay-pill">GPay</span>
+        <span class="pay-pill">Visa</span><span class="pay-pill">Mastercard</span><span class="pay-pill">RuPay</span>
+      </div>
+    </div>
+    <div class="pay-div">owner access</div>
+    <div class="pin-lbl">Enter PIN to Unlock</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="keypad">
+      <button class="key" onclick="kp('1')">1</button>
+      <button class="key" onclick="kp('2')">2</button>
+      <button class="key" onclick="kp('3')">3</button>
+      <button class="key" onclick="kp('4')">4</button>
+      <button class="key" onclick="kp('5')">5</button>
+      <button class="key" onclick="kp('6')">6</button>
+      <button class="key" onclick="kp('7')">7</button>
+      <button class="key" onclick="kp('8')">8</button>
+      <button class="key" onclick="kp('9')">9</button>
+      <button class="key del" onclick="kd()">⌫</button>
+      <button class="key" onclick="kp('0')">0</button>
+      <button class="key empty"></button>
+    </div>
+    <div class="pin-err" id="pinErr">Incorrect PIN. Please try again.</div>
+  </div>
+  <div class="pay-quote">"Every occasion deserves more than a plain message."</div>
+  <div class="pay-copy">© 2026 WJSACLH Studio · All Rights Reserved</div>
+</div>
+
+<!-- ══════════════ AI COACH ══════════════ -->
+<div id="coachOverlay">
+  <div class="coach-panel">
+    <div class="coach-head">
+      <div class="coach-av">🤖</div>
+      <div>
+        <div class="coach-name">A-WISH Guide</div>
+        <div class="coach-status">● Online</div>
+      </div>
+      <button class="coach-close" onclick="closeCoach()">✕</button>
+    </div>
+    <div class="coach-msgs" id="coachMsgs"></div>
+    <div class="coach-chips" id="coachChips"></div>
+    <div class="coach-input-row">
+      <input class="coach-input" id="coachInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendCoach()">
+      <button class="coach-send" onclick="sendCoach()">➤</button>
+    </div>
+  </div>
+</div>
+<button id="coachFloatBtn" onclick="openCoach()">🤖</button>
+
+<!-- ══════════════ TOOL SCREEN ══════════════ -->
+<div id="toolScreen">
+  <div style="max-width:440px;margin:0 auto;padding:0 16px 40px;">
+    <div class="tool-header">
+      <h1>A-Wish</h1>
+      <p>Occasion Ecard Maker</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-row">
+        <label>Recipient Name</label>
+        <input id="name" type="text" placeholder="e.g. Sarah, Dr. Patel, Team Alpha...">
+      </div>
+
+      <!-- Visual occasion grid instead of dropdown -->
+      <div class="form-row">
+        <label>Choose Occasion</label>
+        <div class="occ-grid" id="occGrid"></div>
+      </div>
+
+      <div class="form-row">
+        <label>Personal Note (optional)</label>
+        <textarea id="note" placeholder="Add your own words, or leave blank for a curated blessing..."></textarea>
+      </div>
+      <button class="btn-generate" onclick="generateCard()">✦ Create Card</button>
+    </div>
+
+    <div id="card-wrap">
+      <div id="ecard">
+        <div class="c-badge">A · W I S H</div>
+        <div class="c-occ" id="c-occasion"></div>
+        <div class="c-name" id="c-name"></div>
+        <div class="c-div"></div>
+        <div class="c-msg" id="c-message"></div>
+        <div class="c-verse" id="c-verse"></div>
+        <div class="c-from">— With Love · A-WISH</div>
+        <div class="c-wm">A-WISH © 2026 · WJSACLH</div>
+      </div>
+      <div class="card-btns">
+        <button class="card-btn dl" onclick="downloadCard()">⬇ Save</button>
+        <button class="card-btn wa" onclick="shareWhatsApp()">💬 WhatsApp</button>
+        <button class="card-btn nx" onclick="newBg()">↻ New Look</button>
+        <button class="card-btn back" onclick="newCard()">✕ New Card</button>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <div class="footer">© 2026 WJSACLH Studio · All Rights Reserved</div>
+  </div>
+</div>
+
+<script>
+const VALID_PINS_KEY = "wjsaclh_pins_awish";
+const LEDGER_KEY     = "wjsaclh_ledger_awish";
+
+// ══ PIN ══
+let pv = "";
+function handlePay(){ window.open("https://wjsaclhstudio.gumroad.com/l/awish","_blank"); }
+function kp(d){ if(pv.length>=4)return; pv+=d; ud(); if(pv.length===4)cp(); }
+function kd(){ pv=pv.slice(0,-1); ud(); document.getElementById("pinErr").style.display="none"; }
+function ud(){
+  for(let i=0;i<4;i++){
+    const dot=document.getElementById("d"+i);
+    dot.classList.toggle("filled",i<pv.length);
+    dot.classList.remove("error");
+  }
+}
+function cp(){
+  const _vp=JSON.parse(localStorage.getItem(VALID_PINS_KEY)||'[]');
+  if(pv==='2026'||_vp.includes(pv)){
+    document.getElementById("payScreen").style.display="none";
+    const ts=document.getElementById("toolScreen");
+    ts.classList.add("show"); ts.style.display="block";
+    showCoachBtn();
+    buildOccGrid();
+  } else {
+    document.getElementById("pinErr").style.display="block";
+    for(let i=0;i<4;i++) document.getElementById("d"+i).classList.add("error");
+    setTimeout(()=>{ pv=""; ud(); document.getElementById("pinErr").style.display="none"; },1000);
+  }
+}
+
+// ══ OCCASIONS ══
+const occasions = {
+  birthday:      {icon:"🎂", label:"Birthday",     heading:"Happy Birthday",
+    messages:[
+      "May this birthday be the beginning of a year filled with God's blessings, new adventures and endless joy.",
+      "Wishing you a day as wonderful as you are — may God's goodness overflow in your life today and always.",
+      "Another year of God's faithfulness over your life. May every blessing find its way to you today.",
+      "On your special day, may you feel deeply loved, greatly blessed and beautifully celebrated."
+    ], verse:'"This is the day the Lord has made — rejoice and be glad!" — Psalm 118:24'},
+
+  anniversary:   {icon:"💍", label:"Anniversary",  heading:"Happy Anniversary",
+    messages:[
+      "Celebrating the beautiful love story God wrote for you both. May every year be sweeter than the last.",
+      "Two hearts, one journey, God at the centre. Wishing you many more years of love and laughter.",
+      "May your love continue to grow deeper, richer and more beautiful with every passing year.",
+      "What God has joined together — celebrating the blessing of your love today and always."
+    ], verse:'"Love is patient, love is kind... it endures all things." — 1 Corinthians 13:4,7'},
+
+  congratulations:{icon:"🏆", label:"Congrats",    heading:"Congratulations!",
+    messages:[
+      "Your hard work, dedication and faith have brought you to this wonderful moment. So proud of you!",
+      "This achievement is just the beginning of greater things God has planned for your life.",
+      "Celebrating your success with joy — you have worked so hard and you deserve every bit of this!",
+      "Well done! May this milestone open doors to even more wonderful things ahead."
+    ], verse:'"Commit your work to the Lord and your plans will succeed." — Proverbs 16:3'},
+
+  christmas:     {icon:"🎄", label:"Christmas",    heading:"Merry Christmas",
+    messages:[
+      "May the joy, peace and love of Christmas fill your home and heart this beautiful season.",
+      "Wishing you a Christmas full of God's presence, family warmth and the wonder of His gift.",
+      "May the light of Christ shine brightly in your life this Christmas and always.",
+      "Peace on earth begins in hearts that know the Prince of Peace. Merry Christmas!"
+    ], verse:'"For unto us a Child is born, unto us a Son is given." — Isaiah 9:6'},
+
+  easter:        {icon:"✝", label:"Easter",        heading:"Happy Easter",
+    messages:[
+      "He is risen! May the resurrection power of Jesus bring new life, hope and joy to your heart today.",
+      "Easter reminds us that nothing is ever truly finished in God's hands. Wishing you a blessed celebration.",
+      "May the hope of Easter fill your heart with the assurance that the best is always yet to come.",
+      "Celebrating the greatest victory ever won — may His resurrection be your daily hope."
+    ], verse:'"I am the resurrection and the life." — John 11:25'},
+
+  newyear:       {icon:"🎊", label:"New Year",     heading:"Happy New Year",
+    messages:[
+      "A brand new year, fresh pages, new beginnings — may God write a beautiful story in your life this year.",
+      "Stepping into the new year with faith, hope and the confidence that God goes before you.",
+      "May this new year bring you closer to your dreams, your loved ones and your God.",
+      "New mercies, new strength, new opportunities — may God's goodness follow you all year long."
+    ], verse:'"His mercies are new every morning." — Lamentations 3:23'},
+
+  diwali:        {icon:"🪔", label:"Diwali",        heading:"Happy Diwali",
+    messages:[
+      "May the festival of lights bring warmth, joy and prosperity into your home and heart.",
+      "Wishing you a Diwali filled with the brightness of love, the glow of happiness and the sparkle of joy.",
+      "May light triumph over darkness in your life — happy and blessed Diwali to you and your family.",
+      "Celebrating the victory of light — may your life be filled with brightness and good things always."
+    ], verse:'"Your word is a lamp to my feet, a light for my path." — Psalm 119:105'},
+
+  eid:           {icon:"🌙", label:"Eid",           heading:"Eid Mubarak",
+    messages:[
+      "Eid Mubarak! May Allah bless you with peace, joy and abundance this blessed day and always.",
+      "Wishing you a joyful Eid filled with the warmth of family, the sweetness of celebration and Allah's endless mercy.",
+      "May this Eid bring you happiness, health and all that your heart desires. Eid Mubarak!",
+      "On this blessed occasion, may Allah's grace surround you, His peace fill your heart and His blessings never leave your side."
+    ], verse:'"Indeed, with hardship comes ease." — Quran 94:6'},
+
+  getwell:       {icon:"💚", label:"Get Well",     heading:"Get Well Soon",
+    messages:[
+      "Praying for God's healing hand upon you — may strength and good health return quickly.",
+      "You are in my thoughts and prayers. May God restore you fully and completely, body and spirit.",
+      "Sending love and prayers your way — may healing come swiftly and completely.",
+      "May God's healing grace surround you — wishing you a speedy and complete recovery."
+    ], verse:'"He heals the brokenhearted and binds up their wounds." — Psalm 147:3'},
+
+  thinking:      {icon:"💙", label:"Thinking of You", heading:"Thinking of You",
+    messages:[
+      "Just wanted you to know you are thought of, prayed for and deeply appreciated.",
+      "You crossed my heart today and I wanted you to know — you are loved and not forgotten.",
+      "Sending warmth, love and a gentle reminder that you are never far from my thoughts.",
+      "In the middle of this ordinary day, I wanted to tell you — you matter and you are loved."
+    ], verse:'"The Lord bless you and keep you." — Numbers 6:24'},
+
+  thankyou:      {icon:"🙏", label:"Thank You",    heading:"Thank You",
+    messages:[
+      "Your kindness has meant more than words can say — thank you from the bottom of my heart.",
+      "Gratitude doesn't cover it, but it's a start — thank you for your love and generosity.",
+      "What you did made a real difference. Thank you for being the kind of person who gives so freely.",
+      "From the heart — thank you. Your thoughtfulness is a gift I will always treasure."
+    ], verse:'"Give thanks in all circumstances." — 1 Thessalonians 5:18'},
+
+  graduation:    {icon:"🎓", label:"Graduation",   heading:"Congratulations Graduate!",
+    messages:[
+      "Years of dedication have led to this golden moment. Go forward and light up the world!",
+      "This degree is just the beginning — the best chapters of your story are still unwritten.",
+      "So proud of everything you have achieved. May your future be as bright as your potential.",
+      "You did it! May this milestone be the launchpad for everything you have ever dreamed of."
+    ], verse:'"For I know the plans I have for you — plans to prosper you." — Jeremiah 29:11'},
+
+  wedding:       {icon:"💒", label:"Wedding",      heading:"Wishing You Joy",
+    messages:[
+      "As you begin this beautiful journey together, may love, laughter and God's grace lead your way.",
+      "Two lives, one beautiful story. May your marriage be filled with joy that only grows deeper.",
+      "May your home be a place of peace, your hearts always united, your love always growing.",
+      "On this most beautiful day — may God bless your union with lasting joy and boundless love."
+    ], verse:'"A cord of three strands is not quickly broken." — Ecclesiastes 4:12'},
+
+  babyshower:    {icon:"🍼", label:"Baby",          heading:"A New Blessing!",
+    messages:[
+      "A precious new life — congratulations on this most beautiful gift from above!",
+      "May this little one bring more joy, love and wonder into your world than you ever imagined.",
+      "Welcoming the tiniest most wonderful miracle — so much love and blessings to your growing family.",
+      "A baby is a gift from God — wishing you a season full of tiny fingers, sweet yawns and endless love."
+    ], verse:'"Children are a heritage from the Lord." — Psalm 127:3'},
+
+  farewell:      {icon:"✈️", label:"Farewell",      heading:"Until We Meet Again",
+    messages:[
+      "Every goodbye carries the seed of a new beginning. Go well, go bravely, go blessed.",
+      "Distance cannot diminish what we have shared. Carry these memories wherever you go.",
+      "Wherever this new chapter takes you — may doors open, may grace go before you, may you flourish.",
+      "The world is richer because you walk in it. Go and make it even more beautiful."
+    ], verse:'"The Lord watch between you and me when we are apart." — Genesis 31:49'},
+
+  sympathy:      {icon:"🕊️", label:"Sympathy",     heading:"With Deepest Sympathy",
+    messages:[
+      "There are no words that can ease such a loss — only the assurance that you are not alone in your grief.",
+      "May God's comfort hold you gently through this season of sorrow. Your loved one will never be forgotten.",
+      "Grief is the price of deep love. May peace find you, surround you and hold you through every moment.",
+      "Thinking of you with a heart full of love and praying that God's peace will be your comfort today."
+    ], verse:'"Blessed are those who mourn, for they will be comforted." — Matthew 5:4'},
+};
+
+// ══ BACKGROUND SETS — cinematic, unique per occasion ══
+// Each set: 6 backgrounds so rotation is never predictable
+const bgCounters={};
+
+// Occasion backgrounds: Picsum for general, verified IDs for Diwali & Eid
+// Diwali seeds chosen for warm amber/orange/gold tones = flame-like
+// Eid seeds chosen for deep blue/purple/night tones = mosque/moon-like
+// New Look works by appending timestamp — always fresh image
+
+const bgData = {
+  // [picsum seed, fallback gradient]
+  birthday:      { seeds:[10,110,210,310,410,510], grad:"linear-gradient(135deg,#1a0533,#4a1060,#8b0a50)" },
+  anniversary:   { seeds:[20,120,220,320,420,520], grad:"linear-gradient(135deg,#1a0010,#6b0020,#c0003a)" },
+  congratulations:{ seeds:[30,130,230,330,430,530], grad:"linear-gradient(135deg,#0a1a00,#1a4a00,#2d8000)" },
+  christmas:     { seeds:[40,140,240,340,440,540], grad:"linear-gradient(135deg,#001a00,#003300,#8b0000)" },
+  easter:        { seeds:[50,150,250,350,450,550], grad:"linear-gradient(135deg,#0a1a10,#1a4a20,#4a9a50)" },
+  newyear:       { seeds:[60,160,260,360,460,560], grad:"linear-gradient(135deg,#000033,#000066,#1a0066)" },
+  // Diwali: warm amber/fire seeds on Picsum — give warm golden landscape tones
+  diwali:        { seeds:[777,887,997,667,557,447], grad:"linear-gradient(135deg,#2d0a00,#8b2200,#c85000,#e87000)" },
+  // Eid: deep blue/indigo seeds — give night sky mosque tones
+  eid:           { seeds:[888,778,668,558,448,338], grad:"linear-gradient(135deg,#000820,#001040,#002060,#003080)" },
+  getwell:       { seeds:[80,180,280,380,480,580], grad:"linear-gradient(135deg,#001a10,#003a20,#006a40)" },
+  thinking:      { seeds:[90,190,290,390,490,590], grad:"linear-gradient(135deg,#001020,#002040,#004080)" },
+  thankyou:      { seeds:[100,200,300,400,500,600], grad:"linear-gradient(135deg,#1a0a00,#4a2000,#8a5000)" },
+  graduation:    { seeds:[111,211,311,411,511,611], grad:"linear-gradient(135deg,#000a1a,#001a4a,#003a9a)" },
+  wedding:       { seeds:[122,222,322,422,522,622], grad:"linear-gradient(135deg,#1a0010,#3a0030,#6a0050)" },
+  babyshower:    { seeds:[133,233,333,433,533,633], grad:"linear-gradient(135deg,#0a001a,#200040,#400080)" },
+  farewell:      { seeds:[144,244,344,444,544,644], grad:"linear-gradient(135deg,#1a0a00,#3a2000,#6a4000)" },
+  sympathy:      { seeds:[155,255,355,455,555,655], grad:"linear-gradient(135deg,#001a1a,#003a3a,#005a5a)" },
+};
+
+function getNextBg(key){
+  if(!bgCounters[key]) bgCounters[key]=0;
+  const data = bgData[key]||bgData.thankyou;
+  const seed = data.seeds[bgCounters[key]%data.seeds.length];
+  bgCounters[key]++;
+  const t = Date.now();
+  return "https://picsum.photos/seed/"+(seed+"-"+t)+"/1080/1080";
+}
+
+// Also expose gradient fallback for CSS
+function getBgGrad(key){
+  return (bgData[key]||bgData.thankyou).grad;
+}
+
+
+// ══ BUILD OCCASION GRID ══
+let selectedOcc="birthday";
+function buildOccGrid(){
+  const grid=document.getElementById("occGrid");
+  grid.innerHTML="";
+  Object.entries(occasions).forEach(([key,o])=>{
+    const btn=document.createElement("div");
+    btn.className="occ-btn"+(key==="birthday"?" selected":"");
+    btn.innerHTML=`<span class="occ-icon">${o.icon}</span><span class="occ-label">${o.label}</span>`;
+    btn.onclick=()=>{
+      document.querySelectorAll(".occ-btn").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedOcc=key;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// ══ MESSAGE ROTATION ══
+const usedMsgs={};
+function getMsg(key){
+  const o=occasions[key];
+  if(!usedMsgs[key])usedMsgs[key]=new Set();
+  const u=usedMsgs[key];
+  if(u.size>=o.messages.length)u.clear();
+  let idx;
+  do{idx=Math.floor(Math.random()*o.messages.length);}while(u.has(idx));
+  u.add(idx);
+  return o.messages[idx];
+}
+
+// ══ CARD GENERATION ══
+let currentMessage="",currentOccKey="birthday";
+function generateCard(){
+  const name=document.getElementById("name").value.trim();
+  const note=document.getElementById("note").value.trim();
+  if(!name){alert("Please enter a name!");return;}
+  const key=selectedOcc;
+  currentOccKey=key;
+  const occ=occasions[key];
+  const msg=note||getMsg(key);
+  const bg=getNextBg(key);
+  currentMessage=`${msg}\n\n${occ.verse}\n\n— With Love · A-WISH`;
+  document.getElementById("c-occasion").innerText=occ.heading;
+  document.getElementById("c-name").innerText=name;
+  document.getElementById("c-message").innerText=msg;
+  document.getElementById("c-verse").innerText=occ.verse;
+  const grad=getBgGrad(key);
+  const el=document.getElementById("ecard");
+  el.style.background=grad;
+  el.style.backgroundSize="cover";
+  el.style.backgroundPosition="center";
+  const img=new Image();
+  img.crossOrigin="anonymous";
+  img.onload=()=>{ el.style.backgroundImage="url('"+img.src+"')"; };
+  img.src=bg;
+  document.getElementById("card-wrap").style.display="block";
+  document.getElementById("card-wrap").scrollIntoView({behavior:"smooth"});
+  document.getElementById("status").innerText="";
+}
+function newBg(){
+  const nb=getNextBg(currentOccKey);
+  const ng=getBgGrad(currentOccKey);
+  const el2=document.getElementById("ecard");
+  el2.style.background=ng;
+  const img2=new Image();
+  img2.crossOrigin="anonymous";
+  img2.onload=()=>{ el2.style.backgroundImage="url('"+img2.src+"')"; };
+  img2.src=nb;
+}
+
+// ══ EXPORT ══
+async function renderCard(){
+  const canvas=await html2canvas(document.getElementById("ecard"),{useCORS:true,allowTaint:true,scale:2,logging:false,backgroundColor:null});
+  return new Promise(resolve=>{canvas.toBlob(b=>{resolve(b);},"image/png");});
+}
+async function shareWhatsApp(){
+  const s=document.getElementById("status");s.innerText="⏳ Preparing...";
+  try{
+    const blob=await renderCard();
+    const file=new File([blob],"AWish_Card.png",{type:"image/png"});
+    if(navigator.share&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],text:currentMessage});
+      s.innerText="✅ Shared!";
+    } else {
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");a.href=url;a.download="AWish_Card.png";a.click();URL.revokeObjectURL(url);
+      await navigator.clipboard.writeText(currentMessage).catch(()=>{});
+      s.innerText="📥 Card saved + message copied! Open WhatsApp to share.";
+    }
+  }catch(e){s.innerText="📸 Screenshot the card and share on WhatsApp!";}
+}
+async function downloadCard(){
+  const s=document.getElementById("status");s.innerText="⏳ Saving...";
+  try{
+    const blob=await renderCard();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download="AWish_Card.png";a.click();URL.revokeObjectURL(url);
+    s.innerText="✅ Saved to your device!";
+  }catch(e){s.innerText="📸 Please screenshot the card to save.";}
+}
+function newCard(){
+  document.getElementById("card-wrap").style.display="none";
+  document.getElementById("name").value="";
+  document.getElementById("note").value="";
+  document.getElementById("status").innerText="";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+// ══ AI COACH ══
+const COACH_R={
+  create:"Enter a name, tap your occasion in the grid, add an optional personal note and tap <strong>✦ Create Card</strong>.",
+  background:"Tap <strong>↻ New Look</strong> to cycle through beautiful backgrounds for the same occasion — 6 different looks per occasion.",
+  download:"Tap <strong>⬇ Save</strong> to download as a high-resolution PNG to your device.",
+  whatsapp:"Tap <strong>💬 WhatsApp</strong> — on mobile it shares the card image directly. On desktop, saves image and copies the message.",
+  occasion:"Tap any occasion tile in the grid — Birthday, Anniversary, Eid, Diwali, Wedding, Graduation and more. 16 occasions total.",
+  verse:"Every card includes a scripture verse or sacred text matched to the occasion — automatically added.",
+  safe:"This tool works entirely in your browser. No data is stored on any server. No ads. No tracking. © 2026 WJSACLH Studio.",
+  default:"I am your A-WISH Guide 💌 Ask me how to create a card, change the background, download, share on WhatsApp, or about any occasion."
+};
+function _getReply(t){
+  t=t.toLowerCase();
+  for(const k in COACH_R){if(t.includes(k))return COACH_R[k];}
+  return COACH_R.default;
+}
+let _coachInited=false;
+function openCoach(){
+  document.getElementById("coachOverlay").classList.add("open");
+  if(!_coachInited){
+    _coachInited=true;
+    _addMsg("bot","Namaste! 💌 I am your A-WISH Guide.<br><br>I will help you create beautiful occasion cards in seconds. What do you need help with?");
+    _showChips(["How do I create a card?","How do I change the background?","How do I share on WhatsApp?","What occasions are available?"]);
+  }
+}
+function closeCoach(){document.getElementById("coachOverlay").classList.remove("open");}
+function _addMsg(role,text){
+  const el=document.getElementById("coachMsgs");
+  const d=document.createElement("div");d.className="cmsg "+role;
+  d.innerHTML='<div class="cbubble">'+text+"</div>";
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+function _showChips(opts){
+  document.getElementById("coachChips").innerHTML=opts.map(o=>
+    `<button class="cchip" onclick="_chipClick('${o.replace(/'/g,"\\'")}')">${o}</button>`
+  ).join("");
+}
+function _chipClick(t){
+  document.getElementById("coachChips").innerHTML="";
+  _addMsg("usr",t);_addMsg("bot",_getReply(t));
+  _showChips(["How do I start?","Is my data safe?","What occasions do you have?"]);
+}
+function sendCoach(){
+  const inp=document.getElementById("coachInput");
+  const t=inp.value.trim();if(!t)return;inp.value="";
+  document.getElementById("coachChips").innerHTML="";
+  _addMsg("usr",t);_addMsg("bot",_getReply(t));
+  _showChips(["Tell me more","How do I use this?","Is my data safe?"]);
+}
+function showCoachBtn(){document.getElementById("coachFloatBtn").style.display="block";}
+</script>
+</body>
+</html>
