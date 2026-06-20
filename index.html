@@ -1,75 +1,576 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A-WISH v2 · Occasion Ecard Maker</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>iWishU · Occasion Ecard Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --ink:#0A0F1E;
-  --gold:#C9A84C;
-  --gold2:#E8C87A;
-  --cream:#F7F3EC;
-  --mist:rgba(247,243,236,0.55);
-  --border:rgba(201,168,76,0.22);
-  --deep:#0D1F35;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:"Cormorant Garamond",serif;min-height:100vh;background:var(--ink);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{background:#0A0F1E;height:100%;overflow:hidden;}
 
-/* ══════════════════════════════
+/* ── RAINBOW BAR ── */
+.rainbow-bar{position:fixed;top:0;left:0;right:0;height:6px;z-index:9999;
+  background:linear-gradient(90deg,#ff0000,#ff7700,#ffdd00,#00cc44,#0099ff,#6633cc,#cc00cc);}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:6px 0 0 0;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .4s ease;}
+.screen.active{opacity:1;pointer-events:all;}
+
+/* ═══════════════════════════════
    PAY SCREEN
-══════════════════════════════ */
-#payScreen{
-  min-height:100vh;
-  background:var(--ink);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;
-  padding:0 20px 80px;
-  position:relative;overflow:hidden;
+═══════════════════════════════ */
+#screen-pay{background:linear-gradient(160deg,#fef9f0 0%,#f5e6c4 50%,#e8d49a 100%);
+  display:flex;flex-direction:column;align-items:center;padding:44px 24px 40px;min-height:100%;}
+.pay-logo{font-family:"Playfair Display",Georgia,serif;font-size:48px;font-weight:900;font-style:italic;
+  color:#3d2200;text-align:center;line-height:1;text-shadow:0 2px 12px rgba(61,34,0,0.15);letter-spacing:1px;}
+.pay-dot{color:#C9A84C;}
+.pay-sub{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#8b6020;margin-top:6px;font-weight:700;text-align:center;font-family:"DM Sans",sans-serif;}
+.pay-tagline{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:16px;color:#7a5015;margin:8px 0 28px;text-align:center;}
+
+.price-box{text-align:center;margin-bottom:22px;}
+.price-main{font-family:"Playfair Display",Georgia,serif;font-size:64px;font-weight:900;color:#3d2200;line-height:1;}
+.price-sub2{font-size:13px;letter-spacing:2px;color:#8b6020;margin-top:4px;font-weight:700;font-family:"DM Sans",sans-serif;}
+
+.btn-pay{width:100%;max-width:320px;padding:18px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,#8b6014,#C9A84C,#8b6014);background-size:200%;
+  color:#fff;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;
+  cursor:pointer;box-shadow:0 8px 30px rgba(139,96,20,0.4);transition:all .3s;margin-bottom:28px;}
+.btn-pay:active{transform:scale(.97);}
+
+.owner-div{width:100%;max-width:320px;display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.owner-div span{flex:1;height:1px;background:rgba(139,96,20,0.25);}
+.owner-div p{font-size:10px;letter-spacing:2px;color:#8b6020;white-space:nowrap;font-weight:700;font-family:"DM Sans",sans-serif;}
+
+.pin-display{display:flex;gap:12px;margin-bottom:20px;justify-content:center;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid #8b6020;background:transparent;transition:background .2s;}
+.pin-dot.filled{background:#8b6020;}
+
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:260px;margin-bottom:16px;}
+.key-btn{aspect-ratio:1;border-radius:50%;border:1.5px solid rgba(139,96,20,0.35);background:rgba(255,255,255,0.4);
+  color:#3d2200;font-size:26px;font-weight:700;font-family:"DM Sans",sans-serif;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;backdrop-filter:blur(4px);}
+.key-btn:active{background:rgba(201,168,76,0.5);transform:scale(.93);}
+.key-wide{aspect-ratio:auto;padding:14px;border-radius:12px;font-size:15px;}
+.pay-error{font-size:12px;color:#b00;font-weight:700;min-height:18px;text-align:center;font-family:"DM Sans",sans-serif;}
+.pay-footer{margin-top:24px;font-size:10px;letter-spacing:1.5px;color:#8b6020;text-align:center;font-family:"DM Sans",sans-serif;}
+
+/* Modals (used by ShareCard — owner only) */
+.modal-overlay{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{background:linear-gradient(160deg,#f3e6c4,#d4b876);border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;}
+.modal-title{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:700;color:#3d2200;margin-bottom:6px;}
+.modal-sub{font-size:11px;color:#7a5015;margin-bottom:16px;letter-spacing:1px;font-family:"DM Sans",sans-serif;}
+.btn-close-modal{margin-top:10px;background:transparent;border:none;color:#7a5015;font-size:12px;cursor:pointer;letter-spacing:1px;font-weight:700;font-family:"DM Sans",sans-serif;}
+
+/* ═══════════════════════════════
+   APP SCREEN — exact Lovable design
+═══════════════════════════════ */
+#screen-app{background:#0A0F1E;}
+.awish-root{--ink:#0A0F1E;--gold:#C9A84C;--gold2:#E8C87A;--cream:#F7F3EC;min-height:100%;background:var(--ink);color:var(--cream);font-family:"Cormorant Garamond",Georgia,serif;padding-bottom:40px;}
+.tool-header{text-align:center;padding:20px 20px 18px;}
+.tool-header h1{font-family:"Playfair Display",Georgia,serif;font-size:32px;font-style:italic;letter-spacing:2px;
+  background:linear-gradient(135deg,#C9A84C,#E8C87A,#C9A84C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.tool-header p{font-size:10px;color:rgba(247,243,236,0.35);letter-spacing:4px;margin-top:5px;text-transform:uppercase;font-family:"DM Sans",sans-serif;}
+.form-card{background:rgba(247,243,236,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:22px;padding:20px;max-width:440px;margin:0 auto 18px;width:calc(100% - 32px);}
+.form-row{margin-bottom:14px;}
+.form-card label{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;margin-bottom:8px;font-family:"DM Sans",sans-serif;opacity:.85;}
+.form-card input,.form-card textarea{width:100%;padding:13px 15px;background:rgba(247,243,236,0.05);border:1px solid rgba(247,243,236,0.1);border-radius:11px;color:#F7F3EC;font-family:"Cormorant Garamond",Georgia,serif;font-size:16px;outline:none;}
+.form-card input:focus,.form-card textarea:focus{border-color:rgba(201,168,76,.5);}
+.form-card textarea{resize:none;height:72px;}
+.occ-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.occ-btn{background:rgba(247,243,236,0.04);border:1.5px solid rgba(247,243,236,0.08);border-radius:12px;padding:11px 6px;cursor:pointer;transition:.2s;color:inherit;font-family:"DM Sans",sans-serif;}
+.occ-btn:active{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);}
+.occ-btn.selected{background:rgba(201,168,76,0.15);border-color:#C9A84C;box-shadow:0 0 14px rgba(201,168,76,.15);}
+.occ-icon{font-size:20px;display:block;margin-bottom:4px;}
+.occ-label{font-size:8.5px;color:rgba(247,243,236,0.55);letter-spacing:1px;text-transform:uppercase;}
+.occ-btn.selected .occ-label{color:#C9A84C;}
+.btn-generate{width:100%;padding:16px;background:linear-gradient(135deg,#C9A84C,#B8922A,#C9A84C);color:#0A0F1E;border:none;border-radius:14px;font-family:"Playfair Display",Georgia,serif;font-size:16px;font-weight:700;font-style:italic;cursor:pointer;letter-spacing:1px;box-shadow:0 6px 24px rgba(201,168,76,.3);}
+.btn-generate:active{transform:scale(.98);}
+#card-wrap{max-width:440px;margin:0 auto;padding:0 16px;}
+#ecard{width:100%;aspect-ratio:1/1;border-radius:22px;background:#0A0F1E;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);isolation:isolate;}
+.ecard-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 900ms ease-in-out;animation:kenburns 18s ease-in-out infinite alternate;}
+@keyframes kenburns{0%{transform:scale(1) translate(0,0);}100%{transform:scale(1.15) translate(-1.5%,-1.5%);}}
+
+/* Shimmer particles */
+.shimmer-layer{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;}
+.shimmer-dot{position:absolute;width:3px;height:3px;border-radius:50%;background:radial-gradient(circle,#E8C87A 0%,rgba(232,200,122,0) 70%);box-shadow:0 0 6px 1px rgba(232,200,122,0.6);animation:drift linear infinite;}
+@keyframes drift{0%{transform:translateY(0) translateX(0);opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{transform:translateY(-260px) translateX(20px);opacity:0;}}
+
+/* Word fade-in for message and name */
+.fade-word{display:inline-block;opacity:0;transform:translateY(8px);animation:wordIn 0.6s ease forwards;}
+@keyframes wordIn{to{opacity:1;transform:translateY(0);}}
+.ecard-overlay{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,12,30,0.30) 0%,rgba(8,12,30,0.10) 25%,rgba(8,12,30,0.65) 78%,rgba(8,12,30,0.95) 100%);}
+.ecard-content{position:relative;z-index:2;height:100%;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 28px 50px;}
+.c-occ{font-family:"DM Sans",sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#E8C87A;margin-bottom:12px;text-shadow:0 2px 12px rgba(0,0,0,.7);}
+.c-name{font-family:"Playfair Display",Georgia,serif;font-size:clamp(38px,10vw,58px);font-weight:900;font-style:italic;color:#FFFFFF;margin-bottom:18px;letter-spacing:.5px;line-height:1.05;text-shadow:0 4px 28px rgba(0,0,0,.85),0 2px 4px rgba(0,0,0,.75);}
+.c-div{width:64px;height:2px;background:linear-gradient(90deg,transparent,#E8C87A,transparent);margin:0 auto 18px;}
+.c-msg{font-family:"Playfair Display",Georgia,serif;font-size:clamp(19px,4.8vw,25px);font-weight:700;color:#FFFFFF;line-height:1.5;margin-bottom:18px;font-style:italic;text-shadow:0 3px 18px rgba(0,0,0,.85),0 1px 3px rgba(0,0,0,.75);max-width:94%;}
+.c-from{font-family:"DM Sans",sans-serif;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.8);text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.7);}
+.c-copyright{position:absolute;bottom:12px;left:0;right:0;font-family:"DM Sans",sans-serif;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.55);text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.8);}
+.card-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.card-btn{flex:1;padding:13px;border-radius:12px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:12px;cursor:pointer;border:none;min-width:90px;}
+.card-btn:active{opacity:.8;transform:scale(.97);}
+.card-btn.wa{background:#25D366;color:#fff;}
+.card-btn.share{background:#3897F0;color:#fff;}
+.card-btn.nx{background:linear-gradient(135deg,#C9A84C,#B8922A);color:#0A0F1E;}
+.card-btn.back{background:transparent;border:1px solid rgba(247,243,236,.12);color:rgba(247,243,236,.4);}
+.shuffle-toggle{display:flex!important;align-items:center;gap:10px;cursor:pointer;font-size:10px!important;letter-spacing:2px!important;color:rgba(247,243,236,.6)!important;text-transform:uppercase;font-family:"DM Sans",sans-serif!important;margin:0!important;}
+.shuffle-toggle input{appearance:none;-webkit-appearance:none;width:34px;height:18px;background:rgba(247,243,236,.1);border:1px solid rgba(201,168,76,.3);border-radius:10px;position:relative;cursor:pointer;outline:none;transition:.2s;flex-shrink:0;}
+.shuffle-toggle input::before{content:"";position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:#C9A84C;transition:.2s;}
+.shuffle-toggle input:checked{background:rgba(201,168,76,.25);border-color:#C9A84C;}
+.shuffle-toggle input:checked::before{left:17px;background:#E8C87A;}
+.footer{text-align:center;font-size:10px;color:rgba(247,243,236,.18);padding:24px 16px 8px;font-family:"DM Sans",sans-serif;letter-spacing:.5px;}
+#app-status{font-size:11px;color:#C9A84C;text-align:center;font-weight:700;min-height:16px;font-family:"DM Sans",sans-serif;padding-top:6px;}
+
+/* Toast */
+/* AI Coach FAB */
+#coach-fab{position:fixed;bottom:24px;right:20px;z-index:7000;width:54px;height:54px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,#C9A84C,#E8C87A);font-size:22px;cursor:pointer;display:none;
+  align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(201,168,76,0.45);}
+#coach-fab.show{display:flex;}
+#coach-panel{position:fixed;bottom:86px;right:16px;z-index:6999;width:calc(100% - 32px);max-width:320px;
+  background:linear-gradient(160deg,#1A1208,#0F0C05);border:1px solid rgba(201,168,76,0.3);
+  border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,0.7);display:none;}
+#coach-panel.show{display:block;}
+.coach-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.coach-title{font-family:"Playfair Display",serif;font-size:15px;color:#C9A84C;}
+.coach-close{background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;}
+.coach-msgs{max-height:160px;overflow-y:auto;margin-bottom:8px;display:flex;flex-direction:column;gap:6px;}
+.msg-bubble{padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.4;max-width:90%;font-family:"DM Sans",sans-serif;}
+.msg-coach{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.75);align-self:flex-start;font-style:italic;}
+.msg-user{background:rgba(201,168,76,0.12);color:rgba(255,255,255,0.85);align-self:flex-end;}
+.coach-input-row{display:flex;gap:6px;}
+.coach-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.2);border-radius:8px;
+  color:#fff;font-family:"DM Sans",sans-serif;font-size:12px;padding:8px 10px;outline:none;}
+.coach-send{background:#C9A84C;border:none;border-radius:8px;width:34px;font-size:14px;cursor:pointer;color:#000;}
+
+/* ShareCard FAB — owner only */
+#sharecard-fab{position:fixed;bottom:24px;left:20px;z-index:7000;width:54px;height:54px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,#B8155A,#E0418A);font-size:20px;cursor:pointer;display:none;
+  align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(184,21,90,0.4);}
+#sharecard-fab.show{display:flex;}
+.sc-capture{background:#0A0F1E;border-radius:14px;padding:28px 20px;text-align:center;margin-top:8px;
+  border:1px solid rgba(201,168,76,0.3);}
+.sc-tool-name{font-family:"Playfair Display",serif;font-size:26px;font-weight:900;font-style:italic;color:#fff;margin-bottom:10px;}
+.sc-hook-en{font-family:"Cormorant Garamond",serif;font-size:15px;font-style:italic;color:#E8C87A;margin-bottom:6px;}
+.sc-hook-hi{font-family:"Cormorant Garamond",serif;font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:12px;}
+.sc-price{font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;color:#C9A84C;margin-bottom:10px;}
+.sc-watermark{font-family:"DM Sans",sans-serif;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.3);}
+
+.pay-note{font-size:11px;color:#8b6020;text-align:center;margin-top:-20px;margin-bottom:24px;font-family:"DM Sans",sans-serif;}
+
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#C9A84C,#E8C87A);color:#000;font-weight:700;font-size:13px;
+  padding:10px 22px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9998;
+  white-space:nowrap;font-family:"DM Sans",sans-serif;}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="rainbow-bar"></div>
+
+<!-- ══════════════ PAY SCREEN ══════════════ -->
+<div class="screen active" id="screen-pay">
+  <div class="pay-logo">iWishU</div>
+  <div class="pay-sub">Occasion Ecard Maker</div>
+  <div class="pay-tagline">Cinematic cards for every celebration</div>
+
+  <div class="price-box">
+    <div class="price-main">$4.99</div>
+    <div class="price-sub2">GLOBAL · ONE-TIME · LIFETIME ACCESS</div>
+  </div>
+  <div class="price-box" style="margin-top:-10px;">
+    <div class="price-main" style="font-size:40px;">₹149</div>
+    <div class="price-sub2">LOCAL (INDIA) · ONE-TIME · LIFETIME ACCESS</div>
+  </div>
+
+  <button class="btn-pay" onclick="handlePay()">✦ Get Access on Gumroad</button>
+  <div class="pay-note">PIN delivered instantly via Gumroad email</div>
+
+  <div class="owner-div"><span></span><p>OWNER ACCESS</p><span></span></div>
+
+  <div class="pin-display" id="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+
+  <div class="keypad">
+    <button class="key-btn" onclick="keyTap('1')">1</button>
+    <button class="key-btn" onclick="keyTap('2')">2</button>
+    <button class="key-btn" onclick="keyTap('3')">3</button>
+    <button class="key-btn" onclick="keyTap('4')">4</button>
+    <button class="key-btn" onclick="keyTap('5')">5</button>
+    <button class="key-btn" onclick="keyTap('6')">6</button>
+    <button class="key-btn" onclick="keyTap('7')">7</button>
+    <button class="key-btn" onclick="keyTap('8')">8</button>
+    <button class="key-btn" onclick="keyTap('9')">9</button>
+    <button class="key-btn key-wide" onclick="keyTap('clear')">✕</button>
+    <button class="key-btn" onclick="keyTap('0')">0</button>
+    <button class="key-btn key-wide" onclick="keyTap('back')">⌫</button>
+  </div>
+
+  <div class="pay-error" id="pay-error"></div>
+  <div class="pay-footer">© 2026 WJSACLH Studio · All Rights Reserved</div>
+</div>
+
+<!-- ══════════════ APP SCREEN ══════════════ -->
+<div class="screen" id="screen-app">
+<div class="awish-root">
+  <div class="tool-header">
+    <h1>iWishU</h1>
+    <p>Occasion Ecard Maker</p>
+  </div>
+  <div class="form-card">
+    <div class="form-row"><label>Recipient Name</label><input id="name" placeholder="e.g. Aanya"></div>
+    <div class="form-row"><label>Choose Occasion</label><div class="occ-grid" id="occ-grid"></div></div>
+    <div class="form-row"><label class="shuffle-toggle"><input type="checkbox" id="shuffle" checked><span>🔀 Shuffle backgrounds & wishes</span></label></div>
+    <div class="form-row"><label>Personal Note (optional)</label><textarea id="note" placeholder="Leave blank for a curated message."></textarea></div>
+    <button class="btn-generate" id="create">✦ Create Card</button>
+  </div>
+  <div id="card-wrap" style="display:none;">
+    <div id="ecard">
+      <div class="ecard-bg" id="bg"></div>
+      <div class="ecard-overlay"></div>
+      <div class="shimmer-layer" id="shimmer"></div>
+      <div class="ecard-content">
+        <div class="c-occ" id="c-occ"></div>
+        <div class="c-name" id="c-name"></div>
+        <div class="c-div"></div>
+        <div class="c-msg" id="c-msg"></div>
+        <div class="c-from">— With Love</div>
+        <div class="c-copyright">© 2026 WJSACLH Studio · All Rights Reserved</div>
+      </div>
+    </div>
+    <div class="card-btns">
+      <button class="card-btn wa" id="wa">💬 WhatsApp</button>
+      <button class="card-btn share" id="ig">📸 Save Card</button>
+      <button class="card-btn nx" id="nx">🔀 Shuffle</button>
+      <button class="card-btn back" id="back">✕ New Card</button>
+    </div>
+    <div id="app-status"></div>
+  </div>
+  <div class="footer">© 2026 WJSACLH Studio · All Rights Reserved</div>
+</div>
+</div>
+
+<!-- AI Coach FAB (post-unlock only) -->
+<button id="coach-fab" onclick="toggleCoach()">🤖</button>
+<div id="coach-panel">
+  <div class="coach-header">
+    <div class="coach-title">Wish Coach</div>
+    <button class="coach-close" onclick="toggleCoach()">✕</button>
+  </div>
+  <div class="coach-msgs" id="coach-msgs">
+    <div class="msg-bubble msg-coach">Hi! Need help picking the right occasion or wording? Ask me anything. 🤖</div>
+  </div>
+  <div class="coach-input-row">
+    <input class="coach-input" id="coach-input" placeholder="Ask…" onkeydown="if(event.key==='Enter')sendCoach()">
+    <button class="coach-send" onclick="sendCoach()">➤</button>
+  </div>
+</div>
+
+<!-- ShareCard FAB — OWNER ONLY, hidden unless owner PIN used -->
+<button id="sharecard-fab" onclick="openShareCard()">📌</button>
+<div class="modal-overlay" id="sharecard-modal">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-title">ShareCard (Owner)</div>
+    <div class="modal-sub">For Pinterest / marketing only — not buyer-visible</div>
+    <div id="sc-capture" class="sc-capture">
+      <div class="sc-tool-name">iWishU</div>
+      <div class="sc-hook-en">Turn any name into a card worth keeping.</div>
+      <div class="sc-hook-hi">किसी भी नाम को यादगार कार्ड में बदलें।</div>
+      <div class="sc-price">$4.99 · ₹149</div>
+      <div class="sc-watermark">© 2026 WJSACLH Studio</div>
+    </div>
+    <button class="btn-pay" style="margin-top:14px;" onclick="launchSharePost()">📌 Generate & Copy Caption</button>
+    <button class="btn-close-modal" onclick="closeShareCard()">✕ Close</button>
+  </div>
+</div>
+
+<!-- PIN entry is buyer-side only via Gumroad email; no in-app PIN generation needed -->
+
+<div id="toast">📋 Caption Copied!</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  iWishU — Occasion Ecard Maker
+//  WJSACLH Boom Master Prompt — Gumroad-only standard
+//  © 2026 WJSACLH Studio
+// ═══════════════════════════════════════════════════
+
+// Owner PIN + buyer PIN logic below
+
+// ── PAY SCREEN LOGIC ──
+let pinEntry = '';
+const OWNER_PIN = '2026';
+const BUYER_PIN = '583920'; // San sets this in Gumroad's automated email — update per batch if needed
+const MAX_PIN_LEN = 6; // supports 4-digit owner PIN and 6-digit buyer PIN
+
+function handlePay() {
+  window.open('https://wjsaclhstudio.gumroad.com/l/iwishu', '_blank');
 }
 
-/* Ambient glow layers */
-#payScreen::before{
-  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(32,178,170,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 35% at 90% 80%, rgba(108,99,255,0.08) 0%, transparent 50%);
+function keyTap(k) {
+  document.getElementById('pay-error').innerText = '';
+  if (k==='clear') { pinEntry=''; }
+  else if (k==='back') { pinEntry=pinEntry.slice(0,-1); }
+  else if (pinEntry.length < MAX_PIN_LEN) { pinEntry+=k; }
+  updateDots();
+  // Auto-check once 4 digits entered (owner) — if wrong, allow continuing to 6 (buyer)
+  if (pinEntry.length===4) setTimeout(()=>checkPin(false), 120);
+  if (pinEntry.length===6) setTimeout(()=>checkPin(true), 120);
+}
+function updateDots() {
+  const dotsWrap = document.getElementById('pin-dots');
+  const showCount = Math.max(4, pinEntry.length);
+  dotsWrap.innerHTML = '';
+  for (let i=0;i<showCount;i++) {
+    const d = document.createElement('div');
+    d.className = 'pin-dot' + (i<pinEntry.length ? ' filled' : '');
+    dotsWrap.appendChild(d);
+  }
+}
+function checkPin(isFinal) {
+  if (pinEntry === OWNER_PIN) { unlockApp(true); return; }
+  if (pinEntry === BUYER_PIN) {
+    // Device ledger — max 4 devices per purchase
+    const devices = JSON.parse(localStorage.getItem('iwishu_devices')||'[]');
+    let deviceId = localStorage.getItem('iwishu_device_id');
+    if (!deviceId) {
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+      localStorage.setItem('iwishu_device_id', deviceId);
+    }
+    if (!devices.includes(deviceId)) {
+      if (devices.length >= 4) {
+        document.getElementById('pay-error').innerText = 'Device limit reached (4 max). Contact support.';
+        pinEntry=''; updateDots();
+        return;
+      }
+      devices.push(deviceId);
+      localStorage.setItem('iwishu_devices', JSON.stringify(devices));
+    }
+    unlockApp(false);
+    return;
+  }
+  if (isFinal) {
+    document.getElementById('pay-error').innerText = 'Incorrect PIN. Try again.';
+    pinEntry=''; updateDots();
+  }
+}
+function unlockApp(isOwner) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('coach-fab').classList.add('show');
+  if (isOwner) {
+    document.getElementById('sharecard-fab').classList.add('show');
+  }
 }
 
-/* Subtle grain */
-#payScreen::after{
-  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  background-size:200px 200px;opacity:0.4;
+// ═══════════════════════════════════════════════════
+//  ORIGINAL LOVABLE APP LOGIC — UNCHANGED
+// ═══════════════════════════════════════════════════
+const U = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1400&q=85`;
+const OCCASIONS = [
+  {id:"birthday",icon:"🎂",label:"Birthday",badge:"Happy Birthday",bgs:[U("photo-1502920917128-1aa500764cbd"),U("photo-1519225421980-715cb0215aed"),U("photo-1530103862676-de8c9debad1d"),U("photo-1464349095431-e9a21285b5f3")]},
+  {id:"wedding",icon:"💍",label:"Wedding",badge:"Congratulations",bgs:[U("photo-1519741497674-611481863552"),U("photo-1520250497591-112f2f40a3f4"),U("photo-1465495976277-4387d4b0e4a6"),U("photo-1469474968028-56623f02e42e")]},
+  {id:"anniversary",icon:"💞",label:"Anniversary",badge:"Happy Anniversary",bgs:[U("photo-1518621736915-f3b1c41bfd00"),U("photo-1500530855697-b586d89ba3ee"),U("photo-1496062031456-07b8f162a322"),U("photo-1494774157365-9e04c6720e47")]},
+  {id:"diwali",icon:"🪔",label:"Diwali",badge:"Shubh Deepavali",bgs:[U("photo-1605292356183-a77d0a9c9d1d"),U("photo-1606285461069-80ba562575dd"),U("photo-1605302977545-3a09913be1dd"),U("photo-1635192592106-77a5aacbe1a3"),U("photo-1577083753695-e010191bacb5"),U("photo-1605378229010-11aedbb01b24")]},
+  {id:"congrats",icon:"🏆",label:"Congrats",badge:"Congratulations",bgs:[U("photo-1492684223066-81342ee5ff30"),U("photo-1530023367847-a683933f4172"),U("photo-1531058020387-3be344556be6"),U("photo-1533174072545-7a4b6ad7a6c3")]},
+  {id:"newyear",icon:"🎆",label:"New Year",badge:"Happy New Year",bgs:[U("photo-1546271876-af6caec5fae4"),U("photo-1482329833197-b8b0d27ddcb0"),U("photo-1467810563316-b5476525c0f9"),U("photo-1514525253161-7a46d19cd819")]},
+  {id:"holi",icon:"🌈",label:"Holi",badge:"Happy Holi",bgs:[U("photo-1615818373001-2b9eda13b67d"),U("photo-1583952434395-2e7c69cfff97"),U("photo-1488646953014-85cb44e25828"),U("photo-1502082553048-f009c37129b9")]},
+  {id:"eid",icon:"🌙",label:"Eid",badge:"Eid Mubarak",bgs:[U("photo-1564769662533-4f00a87b4056"),U("photo-1542816417-0983c9c9ad53"),U("photo-1519817650390-64a93db51149"),U("photo-1519817914152-22d216bb9170")]},
+  {id:"christmas",icon:"🎄",label:"Christmas",badge:"Merry Christmas",bgs:[U("photo-1512389142860-9c449e58a543"),U("photo-1543589077-c1a2f6f9c0e4"),U("photo-1482517967863-00e15c9b44be"),U("photo-1481450642126-9d4c0fff3387")]},
+  {id:"thanks",icon:"🙏",label:"Thank You",badge:"Thank You",bgs:[U("photo-1490750967868-88aa4486c946"),U("photo-1457269449834-928af64c684d"),U("photo-1487530811176-3780de880c2d"),U("photo-1496062031456-07b8f162a322")]},
+  {id:"getwell",icon:"🌷",label:"Get Well",badge:"Get Well Soon",bgs:[U("photo-1490750967868-88aa4486c946"),U("photo-1487070183336-b863922373d4"),U("photo-1455659817273-f96807779a8a"),U("photo-1471696035578-3d8c78d99684")]},
+  {id:"baby",icon:"👶",label:"New Baby",badge:"Congratulations",bgs:[U("photo-1519689680058-324335c77eba"),U("photo-1492725764893-90b379c2b6e7"),U("photo-1555252333-9f8e92e65df9"),U("photo-1530041686259-53b34c768c69")]}
+];
+const MESSAGE_POOL = {
+  birthday:["Wishing you a year filled with joy, laughter, and beautiful surprises.","May this birthday be the start of your most magnificent chapter yet.","Another year of you — another year the world feels brighter.","May every candle carry a wish that quietly comes true.","Here's to the laughter behind you and the dreams still ahead.","On your day, may every moment sparkle just like you do."],
+  wedding:["Two souls, one beautiful journey — wishing you forever.","May your love story keep writing chapters more beautiful than the last.","To a lifetime of laughter, late-night talks, and quiet companionship.","Here's to building a home woven from kindness and devotion.","May your days be soft and your love unshakeable."],
+  anniversary:["Years pass, love deepens — congratulations on yours.","Still choosing each other, still writing your love story.","A celebration of all the quiet moments that built something extraordinary.","To the love that grows more beautiful with every passing year.","Some loves are timeless. Yours is one of them."],
+  diwali:["May the lamps of Diwali light up every corner of your life.","Wishing you a festival of light, love, and limitless prosperity.","May this Diwali bring warmth to your home and your heart.","Sparkles outside, peace within — Shubh Deepavali to you.","May the glow of the deepams guide you to your sweetest year yet.","May this festival of lights dissolve every shadow and fill your home with joy."],
+  congrats:["You earned every moment of this — congratulations.","Hard work, heart, and grit. Today, it all shines.","This is just the beginning of everything you'll achieve.","So proud of you and so excited for what's next.","Onward and upward — the world is watching, and you're ready."],
+  newyear:["A blank page, a fresh story — make it beautiful.","May the new year bring courage, calm, and quiet wins.","Cheers to new beginnings and bolder dreams.","Wishing you a year that feels like coming home to yourself.","May every sunrise bring a reason to smile."],
+  holi:["May your life be as vibrant as the colors of Holi.","Splashes of joy, bursts of love — Happy Holi.","Wishing you a Holi as bright and beautiful as your spirit.","Let go of yesterday, color today with joy.","May this Holi paint your year in unforgettable hues."],
+  eid:["May this Eid bring peace, blessings, and quiet joy.","Wishing you a celebration as beautiful as your faith.","Eid Mubarak — may your home be filled with light and love.","May every prayer be answered and every wish be blessed.","A festival of gratitude, a year of grace."],
+  christmas:["May your Christmas be warm, your heart be full, and your home be merry.","Wishing you the magic of this season, all year long.","To peace, to love, to small moments that feel like everything.","May this Christmas wrap you in joy and quiet wonder.","Merry Christmas — may every gift be a memory."],
+  thanks:["For everything you are and everything you do — thank you.","Some gratitude is too big for words. This is mine, in small ones.","You made a difference. I'll never forget it.","Thank you, sincerely, from the very bottom of my heart.","The world is kinder because of you."],
+  getwell:["Sending warmth, light, and a hundred little prayers your way.","Rest gently — the world will wait.","Wishing you healing, comfort, and brighter days ahead.","Take all the time you need. You are missed and you are loved.","Strength to you — one quiet breath at a time."],
+  baby:["A tiny new heartbeat, a whole new kind of love.","Welcome to the most beautiful chapter of your story.","Congratulations on the little one who will change everything.","Sending love to your growing family and your sweet new beginning.","May this little soul fill your home with laughter and light."]
+};
+let selected = OCCASIONS[0], bgIndex = 0;
+const $ = (id) => document.getElementById(id);
+function renderOcc(){
+  const g = $("occ-grid");
+  g.innerHTML = OCCASIONS.map((o,i)=>`<button class="occ-btn${o.id===selected.id?' selected':''}" data-i="${i}"><span class="occ-icon">${o.icon}</span><span class="occ-label">${o.label}</span></button>`).join("");
+  g.querySelectorAll(".occ-btn").forEach(b=>b.onclick=()=>{selected=OCCASIONS[+b.dataset.i];renderOcc();});
+}
+function pickMsg(){const p=MESSAGE_POOL[selected.id]||[];return p[Math.floor(Math.random()*p.length)]||"";}
+function wordFadeHTML(text){
+  return text.split(' ').map((w,i)=>`<span class="fade-word" style="animation-delay:${0.25+i*0.09}s">${w}</span>`).join(' ');
+}
+function spawnShimmer(){
+  const layer = $("shimmer");
+  layer.innerHTML = '';
+  const count = 14;
+  for (let i=0;i<count;i++){
+    const dot = document.createElement('div');
+    dot.className = 'shimmer-dot';
+    const left = Math.random()*100;
+    const delay = Math.random()*6;
+    const dur = 5 + Math.random()*4;
+    const size = 2 + Math.random()*2.5;
+    dot.style.left = left+'%';
+    dot.style.bottom = '0px';
+    dot.style.width = size+'px';
+    dot.style.height = size+'px';
+    dot.style.animationDelay = delay+'s';
+    dot.style.animationDuration = dur+'s';
+    layer.appendChild(dot);
+  }
+}
+function renderCard(){
+  const name = $("name").value.trim()||"Friend";
+  const note = $("note").value.trim();
+  const msg = note || pickMsg();
+  $("bg").style.backgroundImage = `url('${selected.bgs[bgIndex]}')`;
+  $("c-occ").textContent = selected.badge;
+  $("c-name").innerHTML = wordFadeHTML(name);
+  $("c-msg").innerHTML = '"'+wordFadeHTML(msg)+'"';
+  spawnShimmer();
+  $("card-wrap").style.display = "block";
+  document.querySelector(".form-card").style.display = "none";
+  $("card-wrap").scrollIntoView({behavior:"smooth"});
+}
+$("create").onclick = ()=>{
+  if(!$("name").value.trim()){ $("name").focus(); return; }
+  bgIndex = $("shuffle").checked ? Math.floor(Math.random()*selected.bgs.length) : 0;
+  renderCard();
+};
+$("nx").onclick = ()=>{ bgIndex = (bgIndex+1)%selected.bgs.length; renderCard(); };
+$("back").onclick = ()=>{ $("card-wrap").style.display="none"; document.querySelector(".form-card").style.display="block"; window.scrollTo({top:0,behavior:"smooth"}); };
+$("wa").onclick = ()=>{
+  const name = $("name").value.trim()||"Friend";
+  const msg = $("c-msg").textContent;
+  const txt = `${selected.badge}, ${name}!\n\n${msg}\n\n— With Love`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,"_blank");
+};
+
+// ── ADDED: Save/Share to Instagram (Master Payment Standard extra) ──
+$("ig").onclick = async ()=>{
+  const status = document.getElementById('app-status');
+  const name = $("name").value.trim()||"Friend";
+  const msg = $("c-msg").textContent;
+  const caption = `${selected.badge}, ${name}! ${msg} — With Love\n\n#iwishu #${selected.id} #ecard #wjsaclh`;
+  if (navigator.clipboard?.writeText) {
+    try { await navigator.clipboard.writeText(caption); showToast(); } catch(_) {}
+  }
+  status.innerText = '🎨 Preparing image…';
+  try {
+    const h2c = await loadHtml2Canvas();
+    const canvas = await h2c(document.getElementById('ecard'), {useCORS:true, allowTaint:true, scale:2, logging:false, backgroundColor:null});
+    canvas.toBlob(async blob=>{
+      if (!blob) { status.innerText = '📸 Screenshot it — caption copied!'; return; }
+      const file = new File([blob],'iWishU_card.png',{type:'image/png'});
+      if (navigator.share && navigator.canShare({files:[file]})) {
+        try { await navigator.share({files:[file]}); status.innerText = '✅ Shared!'; }
+        catch(e){ status.innerText = '💛 Caption copied — open Instagram!'; }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='iWishU_card.png'; a.click();
+        URL.revokeObjectURL(url);
+        status.innerText = '📥 Saved! Paste caption on Instagram.';
+      }
+    },'image/png');
+  } catch(e) { status.innerText = '📸 Screenshot it — caption copied!'; }
+};
+function loadHtml2Canvas(){
+  return new Promise((res,rej)=>{
+    if (window.html2canvas) { res(window.html2canvas); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = ()=>res(window.html2canvas);
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+function showToast(){
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-.pay-hero{
-  text-align:center;padding:52px 0 28px;
-  position:relative;z-index:2;
+// ── AI COACH ──
+let coachOpen = false;
+function toggleCoach() {
+  coachOpen = !coachOpen;
+  document.getElementById('coach-panel').classList.toggle('show', coachOpen);
 }
-.pay-eyebrow{
-  font-family:"DM Sans",sans-serif;font-size:10px;
-  letter-spacing:5px;text-transform:uppercase;
-  color:var(--gold);margin-bottom:14px;opacity:0.8;
+const coachFallbacks = [
+  "Try 'Thank You' with a personal note for the warmest touch. 🤖",
+  "Diwali + Birthday cards get shared the most — start there!",
+  "Leave the note blank for a curated line, or write your own for a personal touch.",
+  "Shuffle gives you a new background + wish instantly — try a few before sending.",
+];
+let fbIdx = 0;
+function sendCoach() {
+  const input = document.getElementById('coach-input');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  addCoachMsg(msg, 'user');
+  const reply = coachFallbacks[fbIdx++ % coachFallbacks.length];
+  setTimeout(()=>addCoachMsg(reply, 'coach'), 400);
 }
-.pay-logo{
-  font-family:"Playfair Display",serif;
-  font-size:clamp(52px,14vw,82px);
-  font-style:italic;font-weight:700;
-  color:var(--cream);line-height:0.95;
-  margin-bottom:10px;
-  text-shadow:0 0 60px rgba(201,168,76,0.25),0 2px 20px rgba(0,0,0,0.5);
+function addCoachMsg(text, role) {
+  const msgs = document.getElementById('coach-msgs');
+  const div = document.createElement('div');
+  div.className = 'msg-bubble msg-' + role;
+  div.innerText = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
 }
-.pay-logo em{
-  background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 50%,var(--gold) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+
+// ── SHARECARD MODULE (OWNER ONLY — STEP 3A) ──
+function openShareCard() { document.getElementById('sharecard-modal').classList.add('show'); }
+function closeShareCard() { document.getElementById('sharecard-modal').classList.remove('show'); }
+
+function copyShareCaption() {
+  const caption = `Turn any name into a card worth keeping. iWishU — $4.99 / ₹149\n` +
+    `किसी भी नाम को यादगार कार्ड में बदलें। iWishU\n\n` +
+    `#ecard #digitalgift #greetingcard #wishcard #personalizedgift #celebration #wjsaclh`;
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(caption).then(showToast).catch(()=>{});
+  }
 }
-.pay-tagline{
-  font-family:"DM Sans",sans-serif;font-size:11px;
+
+async function launchSharePost() {
+  copyShareCaption();
+  try {
+    const h2c = await loadHtml2Canvas();
+    const canvas = await h2c(document.getElementById('sc-capture'), {useCORS:true, allowTaint:true, scale:2, logging:false});
+    canvas.toBlob(blob=>{
+      if (!blob) return;
+      const file = new File([blob],'iWishU_sharecard.png',{type:'image/png'});
+      if (navigator.share && navigator.canShare({files:[file]})) {
+        navigator.share({files:[file]}).catch(()=>{});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='iWishU_sharecard.png'; a.click();
+        URL.revokeObjectURL(url);
+      }
+    },'image/png');
+  } catch(e) {}
+}
+
+renderOcc();
+</script>
+</body>
+</html>
   letter-spacing:4px;text-transform:uppercase;
   color:rgba(247,243,236,0.35);margin-top:6px;
 }
